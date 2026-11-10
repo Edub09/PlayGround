@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101510">
+  <title>PokéRamPaGe — A floresta precisa de você</title>
+  <link rel="preconnect" href="https://raw.githubusercontent.com">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app" class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="PokéRamPaGe início"><span class="brand-mark">P<span>✦</span></span><span>Poké<span>RamPaGe</span><small>UMA AVENTURA SELVAGEM</small></span></a>
+      <div class="top-location"><span class="live-dot"></span> FLORESTA DE VERIDIANA <span class="slash">/</span> TRILHA DAS SAMAMBAIAS</div>
+      <div class="top-actions"><span class="weather">☀️ <span>17°</span></span><button class="icon-button" id="soundBtn" aria-label="Ativar ou desativar som">♫</button><button class="icon-button" id="helpBtn" aria-label="Ajuda">?</button></div>
+    </header>
+    <section class="game-layout">
+      <aside class="left-rail">
+        <div class="trainer-card"><div class="trainer-avatar">✦</div><div><span class="eyebrow">AVENTUREIRO</span><strong>Guardião da mata</strong><small>Jornada em andamento</small></div><span class="online-dot"></span></div>
+        <div class="rail-heading">SUA JORNADA <span>01</span></div>
+        <nav class="main-nav" aria-label="Menu principal">
+          <button class="nav-item active" data-tab="aventura"><span>⌖</span> Aventura <b>›</b></button>
+          <button class="nav-item" data-tab="equipe"><span>♧</span> Equipe <b class="team-count">1</b></button>
+          <button class="nav-item" data-tab="mochila"><span>▤</span> Mochila <b class="bag-count">0</b></button>
+          <button class="nav-item" data-tab="diario"><span>☷</span> Diário <b>›</b></button>
+        </nav>
+        <div class="quest-card"><div class="quest-top"><span class="quest-icon">✧</span><span class="eyebrow">MISSÃO PRINCIPAL</span></div><strong>Uma sombra na mata</strong><p>Encontre quem está prendendo os Pokémon da floresta.</p><div class="quest-progress"><i></i></div><small class="quest-status">Investigue a trilha <span>0/3</span></small></div>
+        <div class="rail-bottom"><span class="leaf-icon">❋</span><div><b>Um mundo para salvar</b><small>Explore. Lute. Libere.</small></div></div>
+      </aside>
+      <section class="main-column">
+        <div class="scene" id="scene">
+          <div class="scene-image" aria-hidden="true"><div class="sun-haze"></div><div class="far-hills"></div><div class="tree tree-left">♣</div><div class="tree tree-right">♣</div><div class="fern fern-one">❋</div><div class="fern fern-two">❋</div><div class="trail"></div><div class="firefly f1">✦</div><div class="firefly f2">✧</div><div class="firefly f3">✦</div></div>
+          <div class="scene-label"><span class="location-pin">⌖</span><div><b>Trilha das Samambaias</b><small>Floresta de Veridiana · Zona segura</small></div></div>
+          <div class="scene-count"><span class="pulse"></span> EXPLORAÇÃO <b id="exploreCount">01</b></div>
+          <div class="scene-pokemon" id="heroPokemon"></div>
+          <div class="event-toast" id="eventToast" aria-live="polite"></div>
+        </div>
+        <div class="content-area" id="contentArea">
+          <div class="welcome-row"><div><span class="eyebrow accent">SÁBADO, 08:42 · TEMPO LIMPO</span><h1>A floresta está <em>chamando.</em></h1><p class="lead">Há sinais de atividade estranha adiante. Sua jornada começa agora.</p></div><div class="weather-card"><span>☀</span><div><b>Manhã tranquila</b><small>Uma boa hora para explorar</small></div></div></div>
+          <div class="action-grid">
+            <button class="action-card primary-action" id="exploreBtn"><span class="action-art">⌖</span><span class="action-copy"><small>AVANCE PELA TRILHA</small><b>Explorar a floresta <span>→</span></b><em>Descubra encontros e segredos</em></span><span class="keycap">E</span></button>
+            <button class="action-card" id="restBtn"><span class="action-art rest-art">✿</span><span class="action-copy"><small>RECUPERE SUAS FORÇAS</small><b>Descansar <span>→</span></b><em>Recupere 30% de energia</em></span></button>
+          </div>
+          <div class="section-heading"><div><span class="eyebrow">AO SEU REDOR</span><h2>Um lugar cheio de vida</h2></div><span class="nearby-tag"><i></i> TUDO TRANQUILO</span></div>
+          <div class="discovery-row"><div class="discovery-icon">🌿</div><div><b>Folhas recém-mexidas</b><small>Algo pequeno passou por aqui há pouco.</small></div><span class="discovery-time">AGORA</span></div>
+        </div>
+      </section>
+      <aside class="right-panel">
+        <div class="panel-title"><div><span class="eyebrow">SEU TIME</span><h2>Parceiros <span id="partnerCount">01</span></h2></div><button class="more-button" id="teamMore" aria-label="Ver equipe">···</button></div>
+        <div class="active-partner" id="activePartner"></div>
+        <div class="team-list" id="teamList"></div>
+        <div class="team-empty" id="teamEmpty"><span>⌁</span><b>Laços ainda por criar</b><small>Libere Pokémon presos para que eles se juntem à aventura.</small></div>
+        <div class="team-tip"><span>✦</span><p><b>Uma equipe unida</b><br>Alterne entre parceiros para usar as habilidades únicas de cada um.</p></div>
+        <div class="right-divider"></div>
+        <div class="stats-title"><span class="eyebrow">STATUS</span><span class="status-pill">● PRONTO</span></div>
+        <div class="stat-line"><span>✧</span> Nível <b id="statLevel">01</b><span class="stat-spacer"></span> XP <b id="statXp">0 / 30</b></div>
+        <div class="xp-track"><i id="xpFill"></i></div>
+        <div class="stat-line"><span>♡</span> Energia <b id="statHp">100 / 100</b></div>
+        <div class="hp-track"><i id="hpFill"></i></div>
+        <div class="currency"><span>✺</span> <b id="berries">12</b><small>bagas</small><span class="coin-note">Tesouro da floresta</span></div>
+      </aside>
+    </section>
+    <footer class="footer"><span>✿ UMA AVENTURA ORIGINAL DE FÃ · NÃO OFICIAL</span><span>FEITO COM <b>♥</b> E CORAGEM <span class="footer-leaf">✿</span></span></footer>
+  </main>
+  <div id="modalRoot" class="modal-root" aria-live="polite"></div>
+  <script src="game.js"></script>
+</body>
+</html>
