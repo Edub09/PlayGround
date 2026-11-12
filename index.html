@@ -14,7 +14,7 @@
   <main id="app" class="app-shell">
     <header class="topbar">
       <a class="brand" href="#" aria-label="PokéRamPaGe início"><span class="brand-mark">P<span>✦</span></span><span>Poké<span>RamPaGe</span><small>CRÔNICAS DA FLORESTA</small></span></a>
-      <div class="top-location"><span class="live-dot"></span> KANTO <span class="slash">/</span> FLORESTA DE VERIDIANA</div>
+      <div class="top-location"><span class="live-dot"></span> KANTO · JOHTO <span class="slash">/</span> FLORESTA DE VERIDIANA</div>
       <div class="top-actions"><span class="weather">☀️ <span>17°</span></span><button class="icon-button" id="soundBtn" aria-label="Ativar ou desativar som">♫</button><button class="icon-button" id="helpBtn" aria-label="Ajuda">?</button></div>
     </header>
     <section class="game-layout">
@@ -34,7 +34,7 @@
         <div class="scene" id="scene">
           <canvas class="scene-canvas" id="forestCanvas" aria-label="Floresta tridimensional de Veridiana"></canvas>
           <div class="scene-vignette"></div>
-          <div class="scene-label"><span class="location-pin">⌖</span><div><b>Trilha das Samambaias</b><small>Rota 01 · Floresta de Veridiana</small></div></div>
+          <div class="scene-label"><span class="location-pin">⌖</span><div><b id="sceneZoneName">Trilha das Samambaias</b><small id="sceneZoneSubtitle">Rota 01 · Floresta de Veridiana</small></div></div>
           <div class="scene-count"><span class="pulse"></span> JORNADA <b id="exploreCount">01</b></div>
           <div class="scene-hint">ARRASTE PARA GIRAR · ROLE PARA APROXIMAR</div>
           <div class="scene-pokemon" id="heroPokemon"></div>
@@ -66,11 +66,13 @@
         <div class="currency"><span>✺</span> <b id="berries">12</b><small>bagas</small><span class="coin-note">Suprimentos</span></div>
       </aside>
     </section>
-    <footer class="footer"><span>✿ UMA AVENTURA ORIGINAL DE FÃ · NÃO OFICIAL</span><span>FEITO COM <b>♥</b> E CORAGEM <span class="footer-leaf">✿</span></span></footer>
+    <footer class="footer"><span>✿ UMA AVENTURA ORIGINAL DE FÃ · NÃO OFICIAL</span><span><a href="public/models/ATTRIBUTION.md" target="_blank" rel="noopener">CRÉDITOS DOS MODELOS 3D</a> · FEITO COM <b>♥</b> E CORAGEM <span class="footer-leaf">✿</span></span></footer>
   </main>
   <div id="modalRoot" class="modal-root" aria-live="polite"></div>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="scene3d.js"></script>
-  <script src="game.js"></script>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+  <script type="module" src="scene3d.js"></script>
+  <script type="module" src="game.js"></script>
 </body>
 </html>

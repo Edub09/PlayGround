@@ -1,8 +1,10 @@
-/* Procedural Three.js diorama: forest and companions are rendered from 3D meshes. */
+/* Three.js diorama with credited GLB companions and procedural fallbacks. */
+import * as T from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 (() => {
   const canvas = document.getElementById('forestCanvas');
-  if (!canvas || !window.THREE) return;
-  const T = window.THREE;
+  if (!canvas) return;
   const scene = new T.Scene();
   scene.background = new T.Color('#a9c49b');
   scene.fog = new T.Fog('#a9c49b', 18, 48);
@@ -83,20 +85,70 @@
   sunDisc.position.set(-7, 9, -24); scene.add(sunDisc);
   const colors = {
     bulbasaur:['#64aa7d','#75bd8d','#438553','#559c63'], charmander:['#ed8b48','#f39b55','#d66c39','#ffb52e'],
-    squirtle:['#67b8d0','#77c9df','#c88c58','#94694e'], pikachu:['#f1cb4e','#f5d65f','#bd5548','#e7bd37'],
+    squirtle:['#67b8d0','#77c9df','#c88c58','#94694e'], chikorita:['#8bbd61','#a8d779','#f1e7c7','#6d9d4c'],
+    cyndaquil:['#e8a34d','#f4c86c','#e76b3d','#ffe27a'], totodile:['#4badd0','#72c9e6','#e64d58','#f4e3ba'],
+    pikachu:['#f1cb4e','#f5d65f','#bd5548','#e7bd37'],
     oddish:['#5276bd','#688bd1','#60a858','#60a858'], bellsprout:['#d2bd62','#dfcf77','#57934c','#57934c'],
     pidgey:['#ad8157','#c09465','#e8d0a1','#9d704d'], rattata:['#9c6a9c','#ae7dad','#e6b1a6','#895987'],
     eevee:['#b77b4e','#c68b59','#f1d5a5','#99603c'], caterpie:['#65ad67','#78c979','#db5e56','#65ad67'],
     weedle:['#bdac65','#d3c47c','#df7657','#a9934f']
   };
   const sphere = new T.SphereGeometry(1, 18, 12);
-  let hero = null, heroKey = null, explorePulse = 0, targetYaw = 0;
+  const modelPaths = { chikorita: 'public/models/chikorita.glb', cyndaquil: 'public/models/cyndaquil.glb', totodile: 'public/models/totodile.glb' };
+  const modelLoader = new GLTFLoader();
+  const modelTemplates = new Map(), pendingModels = new Set();
+  let hero = null, heroKey = null, explorePulse = 0, targetYaw = 0, elapsed = 0;
   const part = (parent, geometry, mat, pos, size, rotation) => {
     const mesh = new T.Mesh(geometry, mat); mesh.position.set(...pos); mesh.scale.set(...size);
     if (rotation) mesh.rotation.set(...rotation); mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
   };
+  function disposeHeroMaterials(root) {
+    const materials = new Set();
+    root.traverse(o => { if (o.isMesh) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => materials.add(m)); });
+    materials.forEach(m => m.dispose());
+  }
+  function addLoadedModel(key, host, source) {
+    const model = source.clone(true);
+    model.traverse(o => {
+      if (!o.isMesh) return;
+      o.castShadow = true; o.receiveShadow = true;
+      o.material = Array.isArray(o.material) ? o.material.map(m => m.clone()) : o.material.clone();
+    });
+    model.updateMatrixWorld(true);
+    const bounds = new T.Box3().setFromObject(model);
+    const size = bounds.getSize(new T.Vector3());
+    const center = bounds.getCenter(new T.Vector3());
+    const scale = 2.35 / Math.max(size.y, .001);
+    model.scale.setScalar(scale);
+    model.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
+    model.rotation.y = Math.PI;
+    host.clear();
+    host.add(model);
+    host.userData.loadedModel = key;
+  }
+  function loadHeroModel(key, host) {
+    const source = modelTemplates.get(key);
+    if (source) {
+      disposeHeroMaterials(host);
+      addLoadedModel(key, host, source);
+      return;
+    }
+    if (!modelPaths[key] || pendingModels.has(key)) return;
+    pendingModels.add(key);
+    modelLoader.load(modelPaths[key], gltf => {
+      pendingModels.delete(key);
+      modelTemplates.set(key, gltf.scene);
+      if (heroKey === key && hero === host) {
+        disposeHeroMaterials(host);
+        addLoadedModel(key, host, gltf.scene);
+      }
+    }, undefined, error => {
+      pendingModels.delete(key);
+      console.warn(`Não foi possível carregar o modelo 3D de ${key}; usando o modelo procedural.`, error);
+    });
+  }
   function makeHero(key = 'bulbasaur') {
-    if (hero) { scene.remove(hero); hero.traverse(o => { if (o.isMesh) o.material.dispose(); }); }
+    if (hero) { scene.remove(hero); disposeHeroMaterials(hero); }
     heroKey = key;
     const palette = colors[key] || ['#d3a66d','#e2bd82','#886447','#886447'];
     const body = material(palette[0]), head = material(palette[1]), accent = material(palette[2]);
@@ -138,6 +190,7 @@
       if (['rattata','eevee'].includes(key)) part(hero,new T.TubeGeometry(new T.CatmullRomCurve3([new T.Vector3(.4,.42,-.35),new T.Vector3(.72,.3,-.67),new T.Vector3(.8,.52,-.92)]),12,.055,7,false),accent);
     }
     hero.userData.baseY = 0;
+    loadHeroModel(key, hero);
   }
   let drag = null, zone = 0, lastTime = 0, cameraDistance = 14;
   const cameraTarget = new T.Vector3(0, .4, 0);
@@ -204,16 +257,23 @@
       makeHero(key);
     },
     setZone(nextZone) {
-      const next = Number(nextZone) || 0;
+      const next = Math.max(0, Math.min(2, Number(nextZone) || 0));
       if (next === zone) return;
       zone = next;
-      const colors = zone > 0
-        ? { sky: '#9ab58f', fog: '#9ab58f', ground: '#587b4a', trail: '#b7a176' }
-        : { sky: '#a9c49b', fog: '#a9c49b', ground: '#648651', trail: '#b8a477' };
+      const palettes = [
+        { sky: '#a9c49b', ground: '#648651', trail: '#b8a477', canopy: ['#31583d', '#3d6945', '#527b49', '#668950'], shrub: ['#4b7544', '#71934f', '#3e6842'], sun: '#fff0c7' },
+        { sky: '#a9bda0', ground: '#607c4e', trail: '#c4ae7c', canopy: ['#38543e', '#4b6848', '#658052', '#81945e'], shrub: ['#55704a', '#7b8e55', '#486748'], sun: '#f5e5bb' },
+        { sky: '#899d80', ground: '#4d6745', trail: '#aa9167', canopy: ['#30483b', '#405a43', '#566b49', '#6a7950'], shrub: ['#405c3e', '#65754a', '#344f3c'], sun: '#f1d9a8' }
+      ];
+      const colors = palettes[zone];
       scene.background.set(colors.sky);
-      scene.fog.color.set(colors.fog);
+      scene.fog.color.set(colors.sky);
       ground.material.color.set(colors.ground);
       trail.material.color.set(colors.trail);
+      crowns.forEach((mat, i) => mat.color.set(colors.canopy[i]));
+      shrubMats.forEach((mat, i) => mat.color.set(colors.shrub[i]));
+      sun.color.set(colors.sun);
+      sunDisc.material.color.set(colors.sun);
     },
     explore() {
       explorePulse = 1.45;
